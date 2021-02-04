@@ -11,8 +11,16 @@ export default function IndexController(container) {
   this._registerServiceWorker();
 }
 
-IndexController.prototype._registerServiceWorker = function() {
+IndexController.prototype._registerServiceWorker = async function() {
   // TODO: register service worker
+  try{
+    if(!navigator.serviceWorker()) return //if service worker is not supported, we just return. to avoid seeing error in console
+
+    await navigator.serviceWorker.register('sw.js') //returns a promise. NOTE service workers are only lmited to HTTPS
+    console.log('Registration worked!')
+  }catch(e){
+    console.log('Registration failed')
+  }
 };
 
 // open a connection to the server for live updates
