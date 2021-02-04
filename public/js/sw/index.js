@@ -1,5 +1,7 @@
 var staticCacheName = 'wittr-static-v2';
-
+//dd.The slitest change to this file like this, will tirgger a new update in the screen right away
+//if there is a waiting worker already, even though it is not used, it will be replced with this new one. 
+//observe this change in the serviceWorker ection in the application tab of dev tools
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(staticCacheName).then(function(cache) {
