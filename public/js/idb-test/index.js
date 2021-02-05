@@ -1,13 +1,15 @@
 import idb from 'idb';
 
 /*You can only create object stores and indexes within the upgrade function */
-var dbPromise = idb.open('test-db', 2, function(upgradeDb) { //we change the version of the database because the upgrade function is already called by this library
+var dbPromise = idb.open('test-db', 3, function(upgradeDb) { //we change the version of the database because the upgrade function is already called by this library
   /*the oldVersion property tells us the version the browser already knows about. 
   This switch version lets the browser skip the version its know. eg we had version1 
   of our db that had only one store 'keyval'. now we want to add another store 'People'
 
   We did not use 'break' keyword that switch statemenets usually have becauee we still want the database
   to create the 'keyval' object store if it is not created
+
+  Indexes for a database can only be created as part of a version upgrade
   */
   switch(upgradeDb.oldVersion){ 
     case 0:
@@ -17,7 +19,10 @@ var dbPromise = idb.open('test-db', 2, function(upgradeDb) { //we change the ver
       /* we create the 'People' store and make the name property of the objects that will be created inside this functin to be the key. 
       ideally people's name can't alwasys be unique but this will do for this project :)
       */
-      upgradeDb.createObjectStore('People', { keyPath: 'name'}); 
+      upgradeDb.createObjectStore('People', { keyPath: 'name'});
+    case 2: 
+      const peopleStore = upgradeDb.transaction.objectStore('People') //we get the people store
+      peopleStore.createIndex('animal', 'favoriteAnimal') //we created an index called 'animal' that sorts the object by their favoriteAnimal property
   }
 });
 
@@ -69,13 +74,19 @@ dbPromise.then(function(db) {
   keyValStore.put({
     name: 'ebuka ike',
     age: 15,
-    favoriteAnimal: 'cat'
+    favoriteAnimal: 'elephant'
   });
 
   keyValStore.put({
     name: 'ifeanyi okpala',
     age: 25,
     favoriteAnimal: 'cat'
+  });
+
+  keyValStore.put({
+    name: 'favor agoha',
+    age: 25,
+    favoriteAnimal: 'Zebras'
   });
 
   return tx.complete;
@@ -91,4 +102,17 @@ dbPromise.then(function(db) {
 }).then(function(people) {
   //Looking at the log, you get a list of people with names in alphabetical order because 'name' is the key
   console.log('People: ', people);
+});
+
+//read from the new indexstore we created
+dbPromise.then(function(db) {
+  const tx = db.transaction('People');
+  const peopleStore = tx.objectStore('People'); //get the object store
+  const animalStore = peopleStore.index('animal')
+
+  return animalStore.getAll();
+  //return animalStore.getAll('cat'); // will get all the cat perople
+}).then(function(people) {
+  //Looking at the log, you get a list of people with people just sorted by their favoriteAnimal.
+  console.log('animal: ', people);
 });
