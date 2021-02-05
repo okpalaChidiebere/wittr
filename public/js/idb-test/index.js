@@ -1,6 +1,6 @@
 import idb from 'idb';
 
-var dbPromise = idb.open('test-db', 3, function(upgradeDb) {
+var dbPromise = idb.open('test-db', 4, function(upgradeDb) {
   switch(upgradeDb.oldVersion) {
     case 0:
       var keyValStore = upgradeDb.createObjectStore('keyval');
@@ -10,6 +10,9 @@ var dbPromise = idb.open('test-db', 3, function(upgradeDb) {
     case 2:
       var peopleStore = upgradeDb.transaction.objectStore('people');
       peopleStore.createIndex('animal', 'favoriteAnimal');
+    case 3:
+      var peopleStore = upgradeDb.transaction.objectStore('people');
+      peopleStore.createIndex('age', 'age');
   }
   // TODO: create an index on 'people' named 'age', ordered by 'age'
 });
@@ -88,3 +91,12 @@ dbPromise.then(function(db) {
 });
 
 // TODO: console.log all people ordered by age
+dbPromise.then(function(db) {
+  const tx = db.transaction('people'); //create the transaction
+  const peopleStore = tx.objectStore('people'); //get the object store
+  const ageIndex = peopleStore.index('age'); //get the index
+
+  return ageIndex.getAll();
+}).then(function(people) {
+  console.log('People by Age:', people);
+});
