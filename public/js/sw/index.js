@@ -1,4 +1,4 @@
-var staticCacheName = 'wittr-static-v2';
+var staticCacheName = 'wittr-static-v3'; //we changed the version to avoid redundant cache
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
@@ -40,3 +40,10 @@ self.addEventListener('fetch', function(event) {
 
 // TODO: listen for the "message" event, and call
 // skipWaiting if you get the appropriate message
+//we use the message event to listen for changes from the service worker
+self.addEventListener('message', function(event){
+    const { data } = event
+    if( data.action === 'skipWaiting'){
+        self.skipWaiting() //this will make the new service worker take over pages by triggering the 'controllerchange' event at js/main/IndexController.js
+    }
+})

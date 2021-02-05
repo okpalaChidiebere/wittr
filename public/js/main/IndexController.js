@@ -38,6 +38,11 @@ IndexController.prototype._registerServiceWorker = function() {
 
   // TODO: listen for the controlling service worker changing
   // and reload the page
+  //Here we react to skipWaiting being called in js/main/sw/index.js
+  navigator.serviceWorker.addEventListener('controllerchange', function(event){
+    window.location.reload() //we reload the page!
+})
+
 };
 
 IndexController.prototype._trackInstalling = function(worker) {
@@ -51,12 +56,15 @@ IndexController.prototype._trackInstalling = function(worker) {
 
 IndexController.prototype._updateReady = function(worker) {
   var toast = this._toastsView.show("New version available", {
-    buttons: ['refresh', 'dismiss']
+    buttons: ['refresh', 'dismiss'] //we now added the refresh option to the toast button
   });
 
-  toast.answer.then(function(answer) {
+  toast.answer.then(function(answer) { //clicking this refesh button, is where the whole process starts
     if (answer != 'refresh') return;
     // TODO: tell the service worker to skipWaiting
+    //we send a message to the NEW service worker to take control of the pages immediately. This request will be received in event of that serviceWoker 'message' at js/main/sw/index.js
+    //postMessage() is used to send a message from a page to any serviceWorker
+    worker.postMessage({action: 'skipWaiting'}) //a csutom object that we will readin the service worker. You object may not look like this for another scenario.
   });
 };
 
