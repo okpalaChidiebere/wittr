@@ -1,4 +1,4 @@
-var staticCacheName = 'wittr-static-v3';
+var staticCacheName = 'wittr-static-v4';
 
 self.addEventListener('install', function(event) {
   // TODO: cache /skeleton rather than the root page
@@ -6,7 +6,8 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(staticCacheName).then(function(cache) {
       return cache.addAll([
-        '/',
+        '/skeleton',
+        //'/',
         'js/main.js',
         'css/main.css',
         'imgs/icon.png',
@@ -35,6 +36,14 @@ self.addEventListener('activate', function(event) {
 self.addEventListener('fetch', function(event) {
   // TODO: respond to requests for the root page with
   // the page skeleton from the cache
+  var requestUrl = new URL(event.request.url)
+
+  if(requestUrl.origin === location.origin){ //we only want to intercept root request from thesame origin
+      if(requestUrl.pathname === '/'){
+          event.respondWith(caches.match('/skeleton')) //if the path is the root
+          return // we dont need to go to the network as a fallback becuase skeleton is cached as path of the install step
+      }
+  }
 
   event.respondWith(
     caches.match(event.request).then(function(response) {
