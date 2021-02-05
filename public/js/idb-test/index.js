@@ -100,3 +100,29 @@ dbPromise.then(function(db) {
 }).then(function(people) {
   console.log('People by Age:', people);
 });
+
+
+//using cursor in indexed db
+dbPromise.then(function(db) {
+  const tx = db.transaction('people'); //create the transaction
+  const peopleStore = tx.objectStore('people'); //get the object store
+  const ageIndex = peopleStore.index('age'); //get the index
+
+  return ageIndex.openCursor()
+/*}).then(function(cursor){ //skipping the first two items
+  if(!cursor) return
+
+  return cursor.advance(2)*/
+}).then(function logPerson(cursor) {
+  if(!cursor) return
+
+  /*cursor is useful if you want to modify items as you loop through
+  cursor.update(newValue) to change the value
+  cursor.delete() to remove the value
+  */
+  console.log('Cursor at:', cursor.value.name); //we get the first person in the cursor
+  //return a promise for the cursor representing the next item or undefined if ther isn't one
+  return cursor.continue().then(logPerson) //the .then() set an asychronous loop until we are done
+}).then(function(){
+  console.log('Done cursing')
+});
