@@ -184,3 +184,5 @@ Cleaning Photo cache we dont want to keep caching photo we don't need anymore
  The main thing to note here is that avatars will change more often than photos for posts so we implemented this a little bit differently
 
 
+The files modified mainly was
+[service workerfile. A slight change in this file will cause a new updated sw in the background. You can onlu have two. On in use and the updated one](https://github.com/okpalaChidiebere/wittr/blob/task-cache-avatars/public/js/sw/index.js) and [indexController file where we registered ServiceWorker, IndexDB database, Cache](https://github.com/okpalaChidiebere/wittr/blob/task-cache-avatars/public/js/main/IndexController.js)
