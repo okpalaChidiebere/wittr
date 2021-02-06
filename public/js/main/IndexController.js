@@ -167,7 +167,7 @@ IndexController.prototype._cleanImageCache = function() {
         if (message.photo) {
           imagesNeeded.push(message.photo);
         }
-        imagesNeeded.push(message.avatar);
+        imagesNeeded.push(message.avatar); //we also inclue the avartar URLs in the image that we want to keep. We dont want want them getting lost in the clean up!
       });
 
       return caches.open('wittr-content-imgs');
