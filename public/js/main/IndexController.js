@@ -27,6 +27,8 @@ export default function IndexController(container) {
 
   var indexController = this;
 
+  /*Here we want to show cached messages first before we open the websocket to get newer
+  updated messages we we planned */
   this._showCachedMessages().then(function() {
     indexController._openSocket();
   });
@@ -82,6 +84,12 @@ IndexController.prototype._showCachedMessages = function() {
     // in order of date, starting with the latest.
     // Remember to return a promise that does all this,
     // so the websocket isn't opened until you're done!
+    const index = db.transaction('wittrs')
+      .objectStore('wittrs').index('by-date')
+
+    return index.getAll().then(messages => //the messages returned is an array
+      indexController._postsView.addPosts(messages.reverse())  //the date returned is in ascending order, so we reverse the array so he latest post appears at the top
+      )
   });
 };
 

@@ -1,4 +1,13 @@
-var staticCacheName = 'wittr-static-v4';
+/*
+we want to see how this update will work the natural way so we bump the version and disable force updates
+
+We will notice that when we refresh, we see the toast that there is an update, we click the button and the page refreshes
+and we have messages from the cache instead of from the network
+
+when we go offline, we can see the messages still there. But no images yet :)
+We will fix that soon!
+*/
+var staticCacheName = 'wittr-static-v5'; 
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
