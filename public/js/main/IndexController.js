@@ -24,10 +24,12 @@ export default function IndexController(container) {
   this._lostConnectionToast = null;
   this._dbPromise = openDatabase();
   this._registerServiceWorker();
-  this._cleanImageCache();
+  this._cleanImageCache(); //when the page loads it calls the IndexController so we call this as well
 
   var indexController = this;
 
+  /*The cache can still get out of control if the user keps the page open for ages
+  So we call the cleanImageCache every 5 mins */
   setInterval(function() {
     indexController._cleanImageCache();
   }, 1000 * 60 * 5);
@@ -164,6 +166,35 @@ IndexController.prototype._cleanImageCache = function() {
     //
     // Open the 'wittr-content-imgs' cache, and delete any entry
     // that you no longer need.
+    //we create an array of images we want to keep
+    let imagesNeeded = []
+    const tx = db.transaction('wittrs') //we created a transaction to look at the wittrs stroes
+    return tx.objectStore('wittrs').getAll() //get the object store and then get all the images
+      .then(messages => {
+
+        messages.forEach(message => {
+          if(message.photo){ //we look to see if an images contains the photo property. This proprty contains the photo url without the width bit at the end
+            //remeber before this point, we have the messages in the storage object to be maximum of 30 at a time
+            imagesNeeded.push(message.photo) //we add the image as those that we want to keep
+          }
+        })
+
+        return caches.open('wittr-content-imgs') //open our images cached
+      }).then(cache => {
+        cache.keys().then(cachedImagesURLs => { //get all the images stored in the cache using .keys
+
+          cachedImagesURLs.forEach(request => {
+            /*
+            The url we have in our database is not absolute meaning that they do not contain localhost:8080 bit
+            However URL on request object are absolute
+            */
+            const url = new URL(request.url) //For each request we parse the url
+            if(!imagesNeeded.includes(url.pathname)){ //if our path URL isn't in our array of images needed
+              cache.delete(request) //we pass the request to cache.delete
+            }
+          })
+        })
+      })
   });
 };
 
