@@ -14,6 +14,11 @@ function openDatabase() {
   // that uses 'id' as its key
   // and has an index called 'by-date', which is sorted
   // by the 'time' property
+  return idb.open('wittr', 1, function(upgradeDb) {
+    //We will not use the switch to check for oldversions for now. We can do that later if we have to :)
+    const store = upgradeDb.createObjectStore('wittrs', { keyPath: 'id' }) //we will treat the id propert in the store as the primary key
+    store.createIndex('by-date', 'time') //the 'time' property of objects stored will be indexed
+  })
 }
 
 export default function IndexController(container) {
@@ -22,7 +27,7 @@ export default function IndexController(container) {
   this._toastsView = new ToastsView(this._container);
   this._lostConnectionToast = null;
   this._openSocket();
-  this._dbPromise = openDatabase();
+  this._dbPromise = openDatabase(); //creating a promise for a our witrr ap database
   this._registerServiceWorker();
 }
 
@@ -135,6 +140,13 @@ IndexController.prototype._onSocketMessage = function(data) {
 
     // TODO: put each message into the 'wittrs'
     // object store.
+    //we put new messages into the store
+    const tx = db.transaction('wittrs', 'readwrite') //create atransaction
+    const store = tx.objectStore('wittrs') //create get the store
+    messages.forEach(message => {
+      store.put(message)
+    });
+
   });
 
   this._postsView.addPosts(messages);
