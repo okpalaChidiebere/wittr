@@ -169,6 +169,16 @@ IndexController.prototype._onSocketMessage = function(data) {
     // Hint: you can use .openCursor(null, 'prev') to
     // open a cursor that goes through an index/store
     // backwards.
+    //we get the by-date index because we want to remove the olderst posts
+    store.index('by-date').openCursor(null, 'prev') //null & prev will make the cursor go backwords through the index
+    .then(cursor => { //starting with the newest post
+      return cursor.advance(30) //we dont care about the first 30 posts. They are advance ones to us. so we skip pass them
+    }).then(function deletePost(cursor){ //we delete the posts after 30
+      if(!cursor) return
+
+      cursor.delete() //delete the entry
+      return cursor.continue().then(deletePost) //continue the cursor calling thesame cursor again to lopp through the remaining entries
+    })
   });
 
   this._postsView.addPosts(messages);
